@@ -9,12 +9,16 @@ class Peticiones_Mongo:
         self.dbDatos = self.db['Datos']
         self.dbSensores = self.db['Sensores']
 
-    def saveData(self, data):
+    def saveSensores(self, data):
+        self.dbSensores.insert_many(data)
+
+    def saveDatos(self,data):
         self.dbDatos.insert_many(data)
 
     def getSensores(self):
         ArraySensores = []
-        sensores = self.dbSensores.find()
+        sensores = self.dbDatos.find()
         for sensor in sensores:
-            ArraySensores.append(sensor)
+            json_sensor = {'id':sensor['id'],'nombre':sensor['nombre'],'clave':sensor['clave'],'tipoDato':sensor['tipoDato'],'pin':sensor['pin']}
+            ArraySensores.append(json_sensor)
         return ArraySensores

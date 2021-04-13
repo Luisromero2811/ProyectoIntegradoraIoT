@@ -8,7 +8,7 @@ passw = 12345678
 
 
 class Request:
-    
+
     def request(self):
         uri = url + 'Registro'
 

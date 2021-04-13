@@ -42,14 +42,13 @@ import time
 import json
 import sys
 
-token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2MDY1MTE5ZjY4OTY4ZjBhMDg4ZDU0NDciLCJpYXQiOjE2MTc2NjAyODZ9' \
-        '.bkExyxpxqcI3jCfcWP3Evz50SGwNUPW5hq98o7BnLus '
 data = ''
 
 
 class WebSocket:
     dato = 0
     sala = ''
+    datoMax = 0
 
     def on_message(self, ws, message):
         print(f'respuesta: {message}')
@@ -68,17 +67,15 @@ class WebSocket:
             #while True:
             for i in range(1):
                 time.sleep(1)
-                print('entre al if')
-                # dat = int(input('numero'))
                 data = {'t': 7, 'd': {'topic': self.sala, 'event': 'dato', 'data': self.dato}}
                 self.ws.send(json.dumps(data))
-            time.sleep(5)
             self.ws.close()
             print('terminating...')
         Thread(target=run).start()
 
-    def connect(self, dato,sala):
-        self.dato = dato
+    def connect(self, datoMin, sala,token):
+        self.datoOld = self.dato
+        self.dato = datoMin
         self.sala = sala
         count = True
         websocket.enableTrace(True)
@@ -92,10 +89,10 @@ class WebSocket:
                                          on_close=self.on_close)
 
         self.ws.on_open = self.on_open
-        print('antes de run')
+        #print('antes de run')
         wst = Thread(target=self.ws.run_forever())
         wst.start()
-        time.sleep(5)
+        time.sleep(3)
         self.ws.keep_running = False
         wst.join()
-        print('despues de run')
+        #print('despues de run')

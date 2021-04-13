@@ -3,9 +3,10 @@ import time
 import datetime
 
 
-class Sesnores:
+class Sensores:
 
     def __init__(self):
+        self.distancia = 0
         self.respuesta = []
         self.idsen = 0
         self.nombre = ''
@@ -62,6 +63,39 @@ class Sesnores:
         self.valor = distance
         self.fecha = fecha_hora
         return {'id': self.idsen, 'tipodedato': self.tipoDato, 'valor': distance, 'fecha': fecha_hora}
+
+    def movimiento(self):
+        # print(sensor['tipoDeDato'])
+        GPIO.setmode(GPIO.BCM)
+        GPIO_PIR = 18
+        GPIO.setwarnings(False)
+        GPIO.setup(GPIO_PIR, GPIO.IN)
+        fecha_hora = str(datetime.datetime.now())[:19]
+        if GPIO.input(GPIO_PIR):
+            # print("Se detecta  movimiento")
+            valor = "Se detecto movimiento"
+            time.sleep(1)
+        else:
+            # print("No hay movimiento")
+            valor = "No hay movimiento..."
+            time.sleep(1)
+
+        return {'id': self.idsen, 'tipodedato': self.tipoDato, 'valor': valor, 'fecha': fecha_hora}
+
+    def bomba(self):
+        GPIO.setmode(GPIO.BCM)
+        puertos = self.pin.split(',')
+        GPIO_PIN = puertos[0]
+
+        GPIO.setwarnings(False)
+        GPIO.setup(GPIO_PIN,GPIO.OUT)
+
+        if self.distancia <= 40:
+            GPIO.input(GPIO_PIN)
+        else:
+            GPIO.output(GPIO_PIN)
+
+
 
 
 GPIO.cleanup()
