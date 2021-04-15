@@ -1,39 +1,3 @@
-"""import websockets
-import asyncio
-import json
-
-
-class WebSocket:
-    async def connect(self):
-        async with websockets.connect('ws://ec2-3-143-15-255.us-east-2.compute.amazonaws.com:3333/adonis-ws') as ws:
-            await ws.send(json.dumps({
-                't':0
-            }))
-            res = await ws.recv()
-            print(res)
-
-    async def join(self):
-        async with websockets.connect('ws://ec2-3-143-15-255.us-east-2.compute.amazonaws.com:3333/adonis-ws') as ws:
-            await ws.send(json.dumps({
-                't':1,
-                'd':{
-                    'topic':'NivelP'
-                }
-            }))
-            res = await ws.recv()
-            print(res)
-
-    async def send(self):
-        async with websockets.connect('ws://ec2-3-143-15-255.us-east-2.compute.amazonaws.com:3333/adonis-ws') as ws:
-            await ws.send(json.dumps({
-                't':7,
-                'd':{
-                    'topic':'NivelP',
-                    'dato':5
-                }
-            }))
-            res = await ws.recv()
-            print(res)"""
 import asyncio
 
 import websocket

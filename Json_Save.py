@@ -34,9 +34,11 @@ class SaveJson:
         return json_read['Datos']
 
     def clean_Sensores(self):
-        self.data['Sensores'] = []
+        self.data['Sensores']:[]
         with open('data.json','w') as file:
-            json.dump(self.data['Sensores'],file,indent=1)
+            json.dump(self.data['Sensores'],file)
 
     def clean_Datos(self):
         self.data['Datos']:[]
+        with open('data.json','w') as file:
+            json.dump(self.data['Datos'],file)
