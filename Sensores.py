@@ -1,4 +1,5 @@
 import time
+import json
 import datetime
 from RPi import GPIO
 from smbus2 import SMBus, i2c_msg
@@ -14,7 +15,7 @@ class Sensores:
         self.distanciaS = 0
 
         self.banderaP = False
-        self.banderaS = False
+        self.banderaR = False
 
         self.humedad = 0
         
@@ -42,17 +43,17 @@ class Sensores:
             self.respuesta.append(resp)
         elif self.clave == 'hl-69':
             resp = self.humedad_tierra()
-            print('respuesta sensor de tierra',resp)
             self.respuesta.append(resp)
 
-    def setDatos(self, sensor, bandera):
+    def setDatos(self, sensor, bandera, Pila):
         self.idsen = sensor['id']
         self.nombre = sensor['nombre']
         self.clave = sensor['clave']
         self.tipoDato = sensor['tipoDato']
         self.pin = sensor['pin']
         self.lugar = sensor['lugar']
-        self.banderaP = bandera
+        self.banderaR = bandera
+        self.banderaP = Pila
 
     def cleerRespuesta(self):
         self.respuesta = []
@@ -61,47 +62,52 @@ class Sensores:
         return self.respuesta
 
     def ultrasonico(self):
-        
         fecha_hora = str(datetime.datetime.now())[:19]
-        GPIO.setmode(GPIO.BCM)
+        try:
+            
+            GPIO.setmode(GPIO.BCM)
 
-        puertos = self.pin.split(',')
-        Trig = int(puertos[0])
-        Echo = int(puertos[1])
+            puertos = self.pin.split(',')
+            
+            Trig = int(puertos[0])
+            Echo = int(puertos[1])
 
-        GPIO.setup(Trig,GPIO.OUT)
-        GPIO.setup(Echo,GPIO.IN)
+            GPIO.setup(Echo,GPIO.IN)
+            GPIO.setup(Trig,GPIO.OUT)
 
-        
-        GPIO.output(Trig,False)
-        time.sleep(0.5)
                 
-        GPIO.output(Trig,True)
-        time.sleep(0.00001)
-        GPIO.output(Trig,False)
+            GPIO.output(Trig,False)
+            time.sleep(0.5)
+                        
+            GPIO.output(Trig,True)
+            time.sleep(0.00001)
+            GPIO.output(Trig,False)
 
-        while GPIO.input(Echo) == 0:
-            START = time.time()
+            while GPIO.input(Echo) == 0:
+                START = time.time()
 
-        while GPIO.input(Echo) == 1:
-            END = time.time()
+            while GPIO.input(Echo) == 1:
+                END = time.time()
 
-        duracion = START - END
+            duracion = START - END
 
-        distancia = duracion * 17150
-        self.distancia = (round(distancia, 2)*-1)
-                
+            distancia = duracion * 17150
+            self.distancia = (round(distancia, 2)*-1)
+        except:
+            print('ocurrio un error al obtener la distancia')
         """# CM:
-        self.distancia = sig_time / 0.000058
-        print(self.distancia)"""
-        self.valor = int(100 - ((self.distancia*100)/100))
+        self.distancia = sig_time / 0.000058"""
+        
+        #self.valor = int(100 - ((self.distancia*100)/100))
         self.fecha = fecha_hora
 
         if self.lugar == 'NivelP':
+            self.valor = int(100 - ((self.distancia*100)/100))
             self.distanciaP = self.valor
             self.dataSensores['NivelP'] = self.valor
 
         elif self.lugar == 'NivelS':
+            self.valor = int(100 - ((self.distancia*100)/100))
             self.distanciaS = self.valor
             self.dataSensores['NivelS'] = self.valor
             
@@ -134,43 +140,33 @@ class Sensores:
     
     def bomba(self):
         try:
-            GPIO.setmode(GPIO.BCM)
-            puertos = self.pin.split(',')
-            GPIO_PIN = int(puertos[0])
-            print(GPIO_PIN)
+            pin = self.pin.split(',')
+            addr = int(pin[0])
+            pinout = int(pin[1])
             fecha_hora = str(datetime.datetime.now())[:19]
-
-            GPIO.setwarnings(False)
-            GPIO.setup(GPIO_PIN,GPIO.OUT)
-
-            if self.distanciaP > 0 and self.lugar == 'NivelP' and self.banderaP == True and self.humedad < 100:
-                print(f'distancia {self.distancia}')
-                print('bomba encendida')
-                GPIO.output(GPIO_PIN,GPIO.HIGH)
-                self.valor = True
+            with SMBus(1) as bus:
+                if self.lugar == 'NivelP':
+                    data = self.comparacion_bomba(self.banderaP,'NivelP',pinout)
                 
-            if self.valor <= 0 or self.banderaP == False and self.lugar == 'NivelP':
-                print(f'distancia {self.distancia}')
-                print('bomba apagada')
-                GPIO.output(GPIO_PIN,GPIO.LOW)
-                self.valor = False
-            
-            if self.distanciaS <= self.peticionLlenadoS and self.peticionLlenadoS and self.lugar == 'NIvelS' :
-                print(f'distancia {self.distancia}')
-                print('bomba encendida')
-                GPIO.output(GPIO_PIN,GPIO.HIGH)
-                self.valor = True
+                if self.lugar == 'NivelS':
+                    data = self.comparacion_bomba(self.banderaR,'NivelS',pinout)
                 
-            else:
-                print(f'distancia {self.distancia}')
-                print('bomba pagada')
-                GPIO.output(GPIO_PIN,GPIO.LOW)
-                self.valor = False
+                data = data.encode()
+                bus.write_i2c_block_data(addr,0,data)
+                
         except:
-            print('Ocurrio algun error con el sensor')
+            print('ocurrio un error al encender la bomba')
         
         return {'id': self.idsen, 'tipodedato': self.tipoDato, 'valor': self.valor, 'fecha': fecha_hora}
 
+    def comparacion_bomba(self,flag,lugar,pinout):
+        if self.lugar == lugar:
+            if flag:
+                data = f'{self.lugar},{pinout},on' + '\n'
+                return data
+            else:
+                data = f'{self.lugar},{pinout},off' + '\n'
+                return data
 
     def humedad_tierra(self,*args):
         try:
@@ -204,6 +200,10 @@ class Sensores:
             altura += (self.ultrasonico())['valor']
         altura = altura / 3
         print('altura: ', altura)
+
+    def getDone(self):
+        done = []
+
 
 
 

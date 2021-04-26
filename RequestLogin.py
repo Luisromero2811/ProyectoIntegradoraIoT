@@ -22,7 +22,7 @@ class Request:
 
                 if solicitudL.status_code == 200:
                     response_json = json.loads(solicitudL.text)
-                    return response_json['token']
+                    return response_json['token']['token']
                 else:
                     print('credenciales incorrectas...')
                     return False

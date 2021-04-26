@@ -39,7 +39,7 @@ class WebSocket:
     def connect(self, datoMin, sala,token):
         self.dato = datoMin
         self.sala = sala
-        websocket.enableTrace(True)
+        #websocket.enableTrace(True)
         if len(sys.argv) < 2:
             host = f'ws://ec2-3-143-15-255.us-east-2.compute.amazonaws.com:3333/adonis-ws?token={token}'
         else:

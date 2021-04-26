@@ -4,21 +4,34 @@ import json
 
 class Peticiones_Mongo:
     def __init__(self, host):
-        self.myclient = pymongo.MongoClient(f'mongodb://angeldavila:angeldavila@{host}/?authSource=admin')
-        self.db = self.myclient['Base_de_Datos']
-        self.dbDatos = self.db['Datos']
-        self.dbSensores = self.db['Sensores']
+        try:
+            self.myclient = pymongo.MongoClient(f'mongodb://angeldavila:angeldavila@{host}/?authSource=admin')
+            self.db = self.myclient['Base_de_Datos']
+            self.dbDatos = self.db['Datos']
+            self.dbSensores = self.db['Sensores']
+        except:
+            print('ocurrio un error al conectar con mongo')
 
     def saveSensores(self, data):
-        self.dbSensores.insert_many(data)
+        try:
+            self.dbSensores.insert_many(data)
+        except:
+            print('ocurrio un error al guardar los sensores')
 
     def saveDatos(self,data):
-        self.dbDatos.insert_many(data)
+        try:
+            self.dbDatos.insert_many(data)
+        except:
+            print('ocurrio un error al guardar los datos')
 
     def getSensores(self):
         ArraySensores = []
-        sensores = self.dbDatos.find()
-        for sensor in sensores:
-            json_sensor = {'id':sensor['id'],'nombre':sensor['nombre'],'clave':sensor['clave'],'tipoDato':sensor['tipoDato'],'pin':sensor['pin'],'lugar':sensor['lugar']}
-            ArraySensores.append(json_sensor)
-        return ArraySensores
+        try:
+            sensores = self.dbDatos.find()
+            for sensor in sensores:
+                json_sensor = {'id':sensor['id'],'nombre':sensor['nombre'],'clave':sensor['clave'],'tipoDato':sensor['tipoDato'],'pin':sensor['pin'],'lugar':sensor['lugar']}
+                ArraySensores.append(json_sensor)
+            return ArraySensores
+        except:
+            print('ocurrio un error al obtener los sensores')
+            return ArraySensores
