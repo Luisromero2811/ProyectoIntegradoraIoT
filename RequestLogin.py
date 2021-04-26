@@ -10,22 +10,25 @@ passw = 12345678
 class Request:
 
     def request(self):
-        uri = url + 'Registro'
+        try:
+            uri = url + 'Registro'
 
-        datos = {'email': email, 'password': passw}
-        solicitudR = requests.post(uri, params=datos)
+            datos = {'email': email, 'password': passw}
+            solicitudR = requests.post(uri, params=datos)
 
-        if solicitudR.status_code == 201:
-            uri = url + 'Login'
-            solicitudL = requests.post(uri, params=datos)
+            if solicitudR.status_code == 201:
+                uri = url + 'Login'
+                solicitudL = requests.post(uri, params=datos)
 
-            if solicitudL.status_code == 200:
-                response_json = json.loads(solicitudL.text)
-                return response_json['token']
+                if solicitudL.status_code == 200:
+                    response_json = json.loads(solicitudL.text)
+                    return response_json['token']
+                else:
+                    print('credenciales incorrectas...')
+                    return False
+
             else:
-                print('credenciales incorrectas...')
+                print('Formato incorrecto...')
                 return False
-
-        else:
-            print('Formato incorrecto...')
-            return False
+        except:
+            print('sin conexion al servidor')

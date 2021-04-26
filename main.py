@@ -3,74 +3,79 @@ from RequestLogin import *
 from CheckConnectionInternet import *
 from Mongo_Save import *
 from Json_Save import *
-# from Sensores import *
+from Sensores import *
 from RaspberryControl import *
 from PlaySound import *
+from RaspberryControl import *
+from RPi import GPIO
 import time
+import os
 
-Ws = WebSocket()
-req = Request()
-pet = Control()
+
 check = chceckInternet()
 JSON = SaveJson()
 audio = AudioPython()
 
-token = req.request()
 hostMongo = '3.143.15.255:27017'
 
+req = Request()
+rasp = Control()
+Ws = WebSocket()
+mainSensor = Sensores()
 
-def hello():
-    sen = ''
-    valor = 0
-    mongo = ''
-    if check.check():
-        print('entre')
-        # d = int(input('numero'))
-        # s = input('sala')
-        # Ws.connect(d, s, token)
 
-        """print(pet.checkPetLlenadoP(token))
-        audio.playsound_pila_llena(pet.checkPetLlenadoP(token))
-        audio.playsound_pila_vacia()
-        audio.playsound_suelo_humedo(5)
-        audio.playsound_suelo_seco()"""
+global lastv, mongo
 
-        try:
-            mongo = Peticiones_Mongo(hostMongo)
-        except:
-            print('Ocurrio un error con la base de datos')
+haveToken = False
+token = ''
 
-        """try:
-            if len(JSON.getDatos()) > 0:
-                mongo.saveDatos(JSON.getDatos())
-                JSON.clean_Datos()
-        except:
-            print('datos vacios')"""
+bandera = False
 
-        try:
-            if len(JSON.getSensores()) > 0:
-                print(JSON.getSensores())
-                mongo.saveSensores(JSON.getSensores())
-                JSON.clean_Sensores()
-        except:
-            print('sensores vacios')
 
-        sen = mongo.getSensores()
+class Main:
+    
+    def hello():
+        global haveToken, token, bandera
+        
+        conexion = check.check()
+        
 
-    else:
-        sen = JSON.getDatos()
+        if conexion:
+            
+            if haveToken == False:
+                token = req.request()
+                haveToken = True
 
-    print(sen)
-    JSON.clean_Datos()
-    for s in sen:
-        print(s)
-        #sensor = Sensores()
-        #sensor.setDatos(s)
-        #sensor.ejecutar()
-
-        JSON.store_json(s)
+            try:
+                mongo = Peticiones_Mongo(hostMongo)
+                sensores = mongo.getSensores()
+            except:
+                print('sin conexion con mongo')
+            
+            bandera = rasp.CheckRegado(token)
+            print('bandera:',bandera)
+        else:
+            try:
+                sensores = JSON.getDatos()
+            except:
+                print('No hay sensores gurdados')
+        
+        for sensor in sensores:
+            mainSensor.setDatos(sensor,bandera)
+            mainSensor.ejecutar()
+        d = mainSensor.getDataSensores()
+        
+        print(f'------------------------------------dataaa: {d}')
+        
+        Ws.connect(d,'NivelP',token)
+        respuesta = mainSensor.getRespuestas()
+        print(respuesta)
+        mongo.saveSensores(respuesta)
+        mainSensor.cleerRespuesta()
 
 if __name__ == '__main__':
     while True:
-        hello()
+        Main.hello()
+        os.system('clear')
+        #GPIO.cleanup()
         time.sleep(1)

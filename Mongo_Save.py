@@ -4,8 +4,8 @@ import json
 
 class Peticiones_Mongo:
     def __init__(self, host):
-        self.myclient = pymongo.MongoClient(f'mongodb://{host}/')
-        self.db = self.myclient['Simsaweb']
+        self.myclient = pymongo.MongoClient(f'mongodb://angeldavila:angeldavila@{host}/?authSource=admin')
+        self.db = self.myclient['Base_de_Datos']
         self.dbDatos = self.db['Datos']
         self.dbSensores = self.db['Sensores']
 
@@ -19,6 +19,6 @@ class Peticiones_Mongo:
         ArraySensores = []
         sensores = self.dbDatos.find()
         for sensor in sensores:
-            json_sensor = {'id':sensor['id'],'nombre':sensor['nombre'],'clave':sensor['clave'],'tipoDato':sensor['tipoDato'],'pin':sensor['pin']}
+            json_sensor = {'id':sensor['id'],'nombre':sensor['nombre'],'clave':sensor['clave'],'tipoDato':sensor['tipoDato'],'pin':sensor['pin'],'lugar':sensor['lugar']}
             ArraySensores.append(json_sensor)
         return ArraySensores
