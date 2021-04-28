@@ -24,3 +24,8 @@ class AudioPython:
         sound = gtts.gTTS('El suelo es seco', lang='es-us')
         sound.save('audio_suelo_seco.mp3')
         playsound.playsound('audio_suelo_seco.mp3')
+    
+    def playsound_move_detectado(self):
+        sound = gtts.gTTS('Se ha detectado movimiento', lang='es-us')
+        sound.save('audio_move_detectado.mp3')
+        playsound.playsound('audio_move_detectado.mp3')

@@ -7,14 +7,20 @@ class SaveJson:
         self.data = {'Sensores': [], 'Datos': []}
 
     def store_json(self, data):
-        self.data['Datos'].append(data)
+        for sensor in data:
+            self.data['Datos'].append(sensor)
 
         with open('data.json', 'w') as file:
-            json.dump(self.data, file, indent=4)
+            json.dump(self.data['Datos'], file, indent=4)
 
     def save_sensors(self, sensores):
-        self.data['Sensores'].append(sensores)
+        for data in sensores:
+            self.data['Sensores'].append(data)
 
+        with open('dataSen.json', 'w') as file:
+            json.dump(self.data['Sensores'], file, indent=4)
+    
+    def saveAll(self):
         with open('data.json', 'w') as file:
             json.dump(self.data, file, indent=4)
 
@@ -26,19 +32,21 @@ class SaveJson:
     def getSensores(self):
         with open('data.json','r') as file:
             json_read = json.load(file)
-        return json_read['Sensores']
+        return json_read#['Sensores']
 
     def getDatos(self):
         with open('data.json','r') as file:
             json_read = json.load(file)
-        return json_read['Datos']
+        return json_read#['Datos']
 
     def clean_Sensores(self):
         self.data['Sensores']:[]
-        with open('data.json','w') as file:
+        print('limpiando sensores')
+        with open('dataSen.json','w') as file:
             json.dump(self.data['Sensores'],file)
 
     def clean_Datos(self):
         self.data['Datos']:[]
+        print('limpiando datos')
         with open('data.json','w') as file:
             json.dump(self.data['Datos'],file)

@@ -1,0 +1,43 @@
+[{
+  "id": 2,
+  "nombre": "Sensor Ultrasonico",
+  "clave": "hr-sr4",
+  "tipoDato": "integer",
+  "pin": "5,6",
+  "lugar": "NivelS"
+},{
+  "id": 1,
+  "nombre": "Sensor Ultrasonico",
+  "clave": "hr-sr4",
+  "tipoDato": "integer",
+  "pin": "23,24",
+  "lugar": "NivelP"
+},{
+  "id": 3,
+  "nombre": "Bomba de agua",
+  "clave": "bomba",
+  "tipoDato": "boolean",
+  "pin": "31,7",
+  "lugar": "NivelP"
+},{
+  "id": 4,
+  "nombre": "Sensor de Tierra",
+  "clave": "hl-69",
+  "tipoDato": "integer",
+  "pin": "31",
+  "lugar": "Tierra"
+},{
+  "id": 6,
+  "nombre": "Bomba de agua",
+  "clave": "bomba",
+  "tipoDato": "boolean",
+  "pin": "31,8",
+  "lugar": "NivelS"
+},{
+  "id": 7,
+  "nombre": "Sensor Movimiento",
+  "clave": "pir",
+  "tipoDato": "string",
+  "pin": "18",
+  "lugar": "Puerta Central"
+}]

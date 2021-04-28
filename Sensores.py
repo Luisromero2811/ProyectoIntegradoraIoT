@@ -7,6 +7,7 @@ from smbus2 import SMBus, i2c_msg
 class Sensores:
 
     def __init__(self):
+        self.data = {'doneLlenado':False,'doneRegado':False,'doneMove':False}
         self.dataSensores = {'NivelP':0,'NivelS':0,'Humedad':0}
 
         self.distancia = 0
@@ -16,13 +17,15 @@ class Sensores:
 
         self.banderaP = False
         self.banderaR = False
+        self.banderaM = False
 
         self.humedad = 0
         
-        self.peticionLlenadoP = 10
+        self.peticionLlenadoP = 0
         self.peticionLlenadoS = 0
 
         self.respuesta = []
+        self.done = []
 
         self.idsen = 0
         self.nombre = ''
@@ -43,6 +46,9 @@ class Sensores:
             self.respuesta.append(resp)
         elif self.clave == 'hl-69':
             resp = self.humedad_tierra()
+            self.respuesta.append(resp)
+        elif self.clave == 'pir':
+            resp = self.movimiento()
             self.respuesta.append(resp)
 
     def setDatos(self, sensor, bandera, Pila):
@@ -100,44 +106,61 @@ class Sensores:
         
         #self.valor = int(100 - ((self.distancia*100)/100))
         self.fecha = fecha_hora
-
+        print('distanciaz:',self.distancia)
         if self.lugar == 'NivelP':
-            self.valor = int(100 - ((self.distancia*100)/100))
+            self.valor = int(100 - ((self.distancia*100)/25))
             self.distanciaP = self.valor
             self.dataSensores['NivelP'] = self.valor
 
         elif self.lugar == 'NivelS':
-            self.valor = int(100 - ((self.distancia*100)/100))
+            self.valor = int(100 - ((self.distancia*100)/25))
             self.distanciaS = self.valor
             self.dataSensores['NivelS'] = self.valor
-            
-
-        # inches:
-        # distance = sig_time / 0.000148
-        #print('Distance: {0:0.2f} centimeters'.format(self.distancia))
-        #print(int((self.distancia*100)/3000))
-
         
         return {'id': self.idsen, 'tipodedato': self.tipoDato, 'valor': self.valor, 'fecha': fecha_hora}
+
+    def checkDone(self,maxDistance,maxHumedad):
+        
+        if self.banderaP and int(maxDistance) <= self.valor:
+            self.data['doneLlenado'] = True
+        if self.humedad >= int(maxHumedad) and self.banderaR:
+            self.data['doneRegado'] = True
+        if self.valor == 'Se detecto movimiento' and self.banderaM:
+            self.data['doneMove'] = True
+        return self.data
+
+    def resetDoneL(self):
+        self.data['doneLlenado'] = False
+
+    def resetDoneR(self):
+        self.data['doneRegado'] = False
+    
+    def resetDoneM(self):
+        self.data['doneMove'] = False
 
     def movimiento(self):
         # print(sensor['tipoDeDato'])
         try:
             GPIO.setmode(GPIO.BCM)
-            GPIO_PIR = 18
+            puertos = self.pin.split(',')
+            pin = int(puertos[0])
+            GPIO_PIR = pin
             GPIO.setwarnings(False)
             GPIO.setup(GPIO_PIR, GPIO.IN)
             fecha_hora = str(datetime.datetime.now())[:19]
+            
+            #GPIO.add_event_detect(GPIO_PIR,GPIO.RISING,self.detectMove)
             if GPIO.input(GPIO_PIR):
                 # print("Se detecta  movimiento")
                 self.valor = "Se detecto movimiento"
+                self.banderaM = True
                 #time.sleep(1)
         except:
             print('Ocurrio un error en el sensor')
 
         return {'id': self.idsen, 'tipodedato': self.tipoDato, 'valor': self.valor, 'fecha': fecha_hora}
     
-    
+
     def bomba(self):
         try:
             pin = self.pin.split(',')

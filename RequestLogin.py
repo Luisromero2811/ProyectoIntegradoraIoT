@@ -19,10 +19,9 @@ class Request:
             if solicitudR.status_code == 201:
                 uri = url + 'Login'
                 solicitudL = requests.post(uri, params=datos)
-
                 if solicitudL.status_code == 200:
                     response_json = json.loads(solicitudL.text)
-                    return response_json['token']['token']
+                    return response_json['token']
                 else:
                     print('credenciales incorrectas...')
                     return False

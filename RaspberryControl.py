@@ -16,7 +16,7 @@ class Control:
             if solicitud.status_code == 200:
                 json_solicitud = json.loads(solicitud.text)
                 
-                return json_solicitud['llenar']
+                return json_solicitud
             else:
                 print('Ocurrio un error')
         except:
